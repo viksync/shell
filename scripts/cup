@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Sends a POST request with a JSON body to a localhost:3333 route or a full URL.
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: $0 <route-or-full-url> <json-data-string>"
+  echo "Example with route: $0 /notify '{\"msg\":\"hello\"}'"
+  echo "Example with full URL: $0 https://api.example.com/endpoint '{\"foo\":\"bar\"}'"
+  exit 1
+}
+
+if [[ $# -ne 2 ]]; then
+  usage
+fi
+
+endpoint="$1"
+json_data="$2"
+
+if [[ "$endpoint" =~ ^https?:// ]]; then
+  url="$endpoint"
+else
+  base_url="http://localhost:3333"
+  url="${base_url%/}${endpoint}"
+fi
+
+# Run curl and capture output + status code
+response=$(curl -s -w "%{http_code}" -X POST "$url" \
+  -H "Content-Type: application/json" \
+  -d "$json_data") || {
+  echo "Curl command failed" >&2
+  exit 1
+}
+
+# Safety check: response length must be >= 3 for status code
+if [[ ${#response} -lt 3 ]]; then
+  echo "Unexpected response length: ${#response}" >&2
+  exit 1
+fi
+
+# Extract status code (last 3 chars)
+http_status="${response: -3}"
+# Extract body (everything except last 3 chars)
+body="${response:0:${#response}-3}"
+
+echo "HTTP Status: $http_status"
+echo "Response body:"
+echo "$body"

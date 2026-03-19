@@ -1,0 +1,31 @@
+#!/bin/bash
+# Builds the Xcode scheme matching the current directory name (Debug) and launches the resulting app.
+
+set -e
+
+# Get current directory name
+APP_NAME=$(basename "$PWD")
+
+# Load environment variables from .env file inside app subfolder, if it exists
+ENV_PATH="$APP_NAME/.env"
+
+if [ -f "$ENV_PATH" ]; then
+    echo "📦 Loading environment variables from $ENV_PATH..."
+    export $(grep -v '^#' "$ENV_PATH" | xargs)
+fi
+
+# Define build output path
+DERIVED_DATA_PATH="build"
+
+echo "🔨 Building scheme: $APP_NAME..."
+xcodebuild -scheme "$APP_NAME" -configuration Debug -derivedDataPath "$DERIVED_DATA_PATH"
+
+APP_PATH="$DERIVED_DATA_PATH/Build/Products/Debug/$APP_NAME.app"
+
+if [ -d "$APP_PATH" ]; then
+    echo "🚀 Launching app: $APP_NAME..."
+    open "$APP_PATH"
+else
+    echo "❌ Build succeeded but app not found at: $APP_PATH"
+    exit 1
+fi

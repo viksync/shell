@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Sends a GET request to a localhost route (default port 3000) or a full URL; prints status and body.
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: $0 [port] <route-or-full-url>"
+  echo "Example with default port (3000): $0 /status"
+  echo "Example with custom port: $0 8080 /status"
+  echo "Example with full URL: $0 https://api.example.com/status"
+  exit 1
+}
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  usage
+fi
+
+port=3000
+endpoint="$1"
+
+# If 2 arguments, first is port, second is endpoint
+if [[ $# -eq 2 ]]; then
+  port="$1"
+  endpoint="$2"
+fi
+
+if [[ "$endpoint" =~ ^https?:// ]]; then
+  url="$endpoint"
+else
+  base_url="http://localhost:${port}"
+  url="${base_url%/}${endpoint}"
+fi
+
+# Run curl and capture output + status code
+response=$(curl -s -w "%{http_code}" -X GET "$url") || {
+  echo "Curl command failed" >&2
+  exit 1
+}
+
+# Safety check: response length must be >= 3 for status code
+if [[ ${#response} -lt 3 ]]; then
+  echo "Unexpected response length: ${#response}" >&2
+  exit 1
+fi
+
+# Extract status code (last 3 chars)
+http_status="${response: -3}"
+# Extract body (everything except last 3 chars)
+body="${response:0:${#response}-3}"
+
+echo "HTTP Status: $http_status"
+echo "Response body:"
+echo "$body"
+

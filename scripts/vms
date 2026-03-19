@@ -1,0 +1,35 @@
+#!/bin/bash
+# Starts the Ubuntu Server QEMU VM in the background using UTM's disk image, forwarding SSH to port 2222.
+
+# Paths
+QEMU_BIN="/opt/homebrew/bin/qemu-system-aarch64"
+EFI_CODE="/Users/vic/Library/Containers/com.utmapp.UTM/Data/Library/Caches/qemu/edk2-aarch64-code.fd"
+EFI_VARS="/Users/vic/Library/Containers/com.utmapp.UTM/Data/Documents/Ubuntu Server.utm/Data/efi_vars.fd"
+DISK_IMG="/Users/vic/Library/Containers/com.utmapp.UTM/Data/Documents/Ubuntu Server.utm/Data/C50C069C-9691-4E9C-9F45-297F825C4E11.qcow2"
+
+# Log file
+LOG_FILE="$HOME/ubuntu_vm.log"
+
+# Start VM in background
+"$QEMU_BIN" \
+  -name "Ubuntu Server" \
+  -uuid BD0C86C5-E9EC-4037-A0E1-92973F1D5F63 \
+  -machine virt \
+  -cpu host \
+  -smp 8,sockets=1,cores=8,threads=1 \
+  -m 12288 \
+  -accel hvf \
+  -nographic \
+  -drive if=pflash,format=raw,readonly=on,file="$EFI_CODE" \
+  -drive if=pflash,unit=1,file="$EFI_VARS" \
+  -drive file="$DISK_IMG",format=qcow2,if=virtio,discard=unmap \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -device virtio-net-pci,netdev=net0 \
+  -device virtio-rng-pci \
+  -device virtio-serial \
+  -chardev socket,id=org.qemu.guest_agent,path=/tmp/qga.sock,server,nowait \
+  -device virtserialport,chardev=org.qemu.guest_agent,name=org.qemu.guest_agent.0 \
+  >"$LOG_FILE" 2>&1 &
+
+# Print PID
+echo "VM started in background with PID: $!"

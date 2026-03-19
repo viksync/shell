@@ -1,0 +1,237 @@
+#!/bin/bash
+# Scans all 26 alphabet letters and reports which are taken (alias, executable, builtin, function) vs free.
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[0;37m'
+BOLD='\033[1m'
+DIM='\033[2m'
+ITALIC='\033[3m'
+UNDERLINE='\033[4m'
+BLINK='\033[5m'
+REVERSE='\033[7m'
+RESET='\033[0m'
+
+BG_RED='\033[41m'
+BG_GREEN='\033[42m'
+BG_YELLOW='\033[43m'
+BG_BLUE='\033[44m'
+BG_PURPLE='\033[45m'
+BG_CYAN='\033[46m'
+BG_BLACK='\033[40m'
+BG_DARKBLUE='\033[44m'
+BG_DARKGREEN='\033[42m'
+BG_DARKRED='\033[41m'
+
+# Source shell config to get interactive aliases
+shopt -s expand_aliases 2>/dev/null
+
+# Get all aliases from user's interactive shells into a temp file
+alias_output=$(mktemp)
+bash -ic "alias" 2>/dev/null > "$alias_output"
+zsh -ic "alias" 2>/dev/null >> "$alias_output"
+
+# Build associative array of aliases
+declare -A all_aliases
+while IFS='=' read -r name rest; do
+  # Remove 'alias ' prefix from name
+  name="${name#alias }"
+  # Trim whitespace
+  name="${name// /}"
+  all_aliases["$name"]="$rest"
+done < "$alias_output"
+rm -f "$alias_output"
+
+clear
+echo
+echo -e "${BOLD}${GREEN}███████╗██╗███╗   ██╗ ██████╗ ██╗     ███████╗████████╗${RESET}"
+echo -e "${BOLD}${GREEN}██╔════╝██║████╗  ██║██╔════╝ ██║     ██╔════╝╚══██╔══╝${RESET}"
+echo -e "${BOLD}${GREEN}███████╗██║██╔██╗ ██║██║  ███╗██║     █████╗     ██║   ${RESET}"
+echo -e "${BOLD}${GREEN}╚════██║██║██║╚██╗██║██║   ██║██║     ██╔══╝     ██║   ${RESET}"
+echo -e "${BOLD}${GREEN}███████║██║██║ ╚████║╚██████╔╝███████╗███████╗   ██║   ${RESET}"
+echo -e "${BOLD}${GREEN}╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝   ╚═╝   ${RESET}"
+echo -e "${DIM}${WHITE}                  commands scanner${RESET}"
+echo
+
+spin_chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+echo -ne "${YELLOW}${BOLD}Scanning your alphabet...${RESET} "
+
+declare -a taken_letters=()
+declare -a free_letters=()
+declare -a aliases=()
+declare -a executables=()
+declare -a builtins=()
+declare -a functions=()
+
+# Progress bar setup
+total_letters=26
+current=0
+
+for letter in {a..z}; do
+  # Update spinner
+  spin_index=$((current % ${#spin_chars}))
+  echo -ne "\r${YELLOW}${BOLD}Scanning your alphabet...${RESET} ${CYAN}${spin_chars:$spin_index:1}${RESET} "
+
+  # Progress bar
+  progress=$(((current * 20) / total_letters))
+  echo -ne "${DIM}["
+  for ((i = 0; i < 20; i++)); do
+    if ((i < progress)); then
+      echo -ne "${GREEN}█"
+    else
+      echo -ne "${DIM}·"
+    fi
+  done
+  echo -ne "${DIM}]${RESET} ${CYAN}${letter}${RESET}  "
+
+  found_something=false
+
+  # Check for aliases first (from all_aliases array)
+  if [[ -n "${all_aliases[$letter]}" ]]; then
+    alias_value="${all_aliases[$letter]}"
+    aliases+=("$letter → $alias_value")
+    found_something=true
+  fi
+
+  # Check if it's an executable in PATH (only if not an alias)
+  if [[ "$found_something" == false ]]; then
+    exec_path=$(which "$letter" 2>/dev/null)
+    if [[ $? -eq 0 && -n "$exec_path" ]]; then
+      executables+=("$letter → $exec_path")
+      found_something=true
+    fi
+  fi
+
+  # Check if it's a shell builtin
+  if [[ "$found_something" == false ]]; then
+    builtin_check=$(type -t "$letter" 2>/dev/null)
+    if [[ "$builtin_check" == "builtin" ]]; then
+      builtins+=("$letter → shell builtin")
+      found_something=true
+    fi
+  fi
+
+  # Check if it's a function
+  if [[ "$found_something" == false ]]; then
+    if declare -f "$letter" >/dev/null 2>&1; then
+      functions+=("$letter → user function")
+      found_something=true
+    fi
+  fi
+
+  # Categorize the letter
+  if [[ "$found_something" == true ]]; then
+    taken_letters+=("$letter")
+  else
+    free_letters+=("$letter")
+  fi
+
+  ((current++))
+  sleep 0.02 # Tiny delay for visual effect
+done
+
+# Clear the progress line
+echo -ne "\r\033[K"
+echo
+
+# Print grouped results with style
+if [[ ${#aliases[@]} -gt 0 ]]; then
+  echo -e "${BOLD}${PURPLE}━━━ ALIASES ━━━${RESET}"
+  for alias_item in "${aliases[@]}"; do
+    letter="${alias_item%% →*}"
+    value="${alias_item#*→ }"
+    echo -e "  ${BG_PURPLE}${WHITE}${BOLD} ${letter} ${RESET} ${PURPLE}→${RESET} ${ITALIC}${value}${RESET}"
+  done
+  echo
+fi
+
+if [[ ${#executables[@]} -gt 0 ]]; then
+  echo -e "${BOLD}${BLUE}━━━ EXECUTABLES ━━━${RESET}"
+  for exec_item in "${executables[@]}"; do
+    letter="${exec_item%% →*}"
+    path="${exec_item#*→ }"
+    echo -e "  ${BG_BLUE}${WHITE}${BOLD} ${letter} ${RESET} ${BLUE}→${RESET} ${path}"
+  done
+  echo
+fi
+
+if [[ ${#builtins[@]} -gt 0 ]]; then
+  echo -e "${BOLD}${YELLOW}━━━ BUILTINS ━━━${RESET}"
+  for builtin_item in "${builtins[@]}"; do
+    letter="${builtin_item%% →*}"
+    echo -e "  ${BG_YELLOW}${BLACK}${BOLD} ${letter} ${RESET} ${YELLOW}→${RESET} ${DIM}shell builtin${RESET}"
+  done
+  echo
+fi
+
+if [[ ${#functions[@]} -gt 0 ]]; then
+  echo -e "${BOLD}${BLUE}━━━ FUNCTIONS ━━━${RESET}"
+  for func_item in "${functions[@]}"; do
+    letter="${func_item%% →*}"
+    echo -e "  ${BG_BLUE}${WHITE}${BOLD} ${letter} ${RESET} ${BLUE}→${RESET} ${DIM}user function${RESET}"
+  done
+  echo
+fi
+
+echo
+
+# Visual alphabet grid
+echo -e "${BOLD}${WHITE}ALPHABET MAP:${RESET}"
+echo
+echo -n "  "
+for letter in {a..z}; do
+  if [[ " ${taken_letters[*]} " =~ " ${letter} " ]]; then
+    # Taken letters - dark background with white text
+    echo -ne "${DIM} ${letter} ${RESET} "
+  else
+    # Free letters - no special coloring
+    echo -ne "${BG_DARKBLUE}${WHITE}${BOLD} ${letter} ${RESET} "
+  fi
+
+  # Line break after every 13 letters for nice formatting
+  if [[ "$letter" == "m" ]]; then
+    echo
+    echo -n "  "
+  fi
+done
+echo
+echo
+
+# Stats with style
+taken_count=${#taken_letters[@]}
+free_count=${#free_letters[@]}
+taken_percent=$(((taken_count * 100) / 26))
+free_percent=$(((free_count * 100) / 26))
+
+echo -e "${BOLD}${WHITE}STATISTICS:${RESET}"
+echo
+
+# Taken stats with bar
+echo -ne "  ${RED}${BOLD}TAKEN${RESET}  ${WHITE}[${taken_count}/26]${RESET} "
+echo -ne "${DIM}("
+for ((i = 0; i < 10; i++)); do
+  if ((i < taken_percent / 10)); then
+    echo -ne "${RED}▰"
+  else
+    echo -ne "${DIM}▱"
+  fi
+done
+echo -e "${DIM}) ${taken_percent}%${RESET}"
+
+# Free stats with bar
+echo -ne "  ${GREEN}${BOLD}FREE${RESET}   ${WHITE}[${free_count}/26]${RESET} "
+echo -ne "${DIM}("
+for ((i = 0; i < 10; i++)); do
+  if ((i < free_percent / 10)); then
+    echo -ne "${GREEN}▰"
+  else
+    echo -ne "${DIM}▱"
+  fi
+done
+echo -e "${DIM}) ${free_percent}%${RESET}"
+
+echo
