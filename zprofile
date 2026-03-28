@@ -26,6 +26,7 @@ path+=(
     "$HOME/.antigravity/antigravity/bin"
     "$HOME/.opencode/bin"
     "/Applications/Obsidian.app/Contents/MacOS"
+    "/opt/homebrew/bin/zellij"
 )
 
 # Bun
