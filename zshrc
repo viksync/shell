@@ -1,5 +1,8 @@
+if [[ -z "$ZELLIJ" ]]; then
+  zellij
+fi
+
 # ----------------------------------------
-#
 # Powerlevel10k instant prompt
 # ----------------------------------------
 
@@ -12,6 +15,7 @@ if [[ -r $p10instant ]]; then
   source $p10instant
 fi
 
+
 # ----------------------------------------
 # Zinit Plugin Manager
 # ----------------------------------------
@@ -20,6 +24,7 @@ source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 unalias zi 2>/dev/null
+
 
 # ----------------------------------------
 # Plugin and Theme Loading
@@ -141,15 +146,18 @@ for f in $HOME/.config/shell/functions/*.(sh|zsh)(.N); do source "$f"; done
 
 
 # ----------------------------------------
-# Misc
+# Completions
 # ----------------------------------------
-
-export l="localhost:3000"
 
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
 zstyle ':fzf-tab:complete:z:*' fzf-preview 'eza -1 --color=always $realpath'
 zstyle ':fzf-tab:complete:ls:*' fzf-preview 'eza -1 --color=always $realpath'
 zstyle ':fzf-tab:complete:e:*' fzf-preview 'eza -1 --color=always $realpath'
+
+
+# ----------------------------------------
+# Dev tools
+# ----------------------------------------
 
 [ -s "/Users/vic/.bun/_bun" ] && source "/Users/vic/.bun/_bun"
 

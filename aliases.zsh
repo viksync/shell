@@ -634,3 +634,16 @@ lap() {
 }
 
 alias dp="noglob dph"
+
+
+# ===============================
+# Docker
+# ===============================
+
+dcd() {
+  docker compose down
+}
+
+dcu() {
+  docker compose up
+}

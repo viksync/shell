@@ -10,6 +10,7 @@ export EDITOR='nvim'
 export BAT_THEME="TwoDark"
 
 export scripts='$HOME/.config/shell/scripts/'
+export l="localhost:3000"
 
 # Suppress history in REPL tools
 export NODE_REPL_HISTORY=""
@@ -37,5 +38,7 @@ export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 
-export OTEL_METRIC_EXPORT_INTERVAL=10000  # 10 seconds (default: 60000ms)
-export OTEL_LOGS_EXPORT_INTERVAL=5000     # 5 seconds (default: 5000ms)
+export OTEL_METRIC_EXPORT_INTERVAL=10000
+# 10 seconds (default: 60000ms)
+export OTEL_LOGS_EXPORT_INTERVAL=5000
+# 5 seconds (default: 5000ms)
