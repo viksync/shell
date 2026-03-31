@@ -35,5 +35,6 @@ echo "Setting up shell symlinks..."
 link "$SHELL_DIR/zshrc" "$HOME/.zshrc"
 link "$SHELL_DIR/zshenv" "$HOME/.zshenv"
 link "$SHELL_DIR/zprofile" "$HOME/.zprofile"
+link "$SHELL_DIR/aliases.zsh" "$HOME/.aliases.zsh"
 
 echo "Done."

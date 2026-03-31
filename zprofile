@@ -16,6 +16,7 @@ path+=(
 # User scripts
 path+=(
     "$HOME/.config/shell/scripts"
+    "$HOME/.config/shell/mac-scripts"
 )
 
 # Local tools
