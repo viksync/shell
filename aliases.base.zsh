@@ -1,6 +1,6 @@
 _ALIASES="$HOME/.config/shell/aliases"
 
-for _f in "$_ALIASES"/*.zsh; do
+for _f in "$_ALIASES"/portable/*.zsh; do
   source "$_f"
 done
 unset _f
