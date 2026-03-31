@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v sshpass &>/dev/null; then
+  echo "sshpass not found, installing via Homebrew..."
+  brew install sshpass
+fi
+
+REMOTE="root@72.60.17.246"
+REMOTE_SSH_DIR="/root/.ssh"
+
+# Ask once
+read -rsp "Password for $REMOTE: " SSHPASS
+echo
+export SSHPASS
+
+SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
+SSHPASS_CMD=(sshpass -e)
+
+echo "Copying public key via ssh-copy-id..."
+"${SSHPASS_CMD[@]}" ssh-copy-id -i ~/.ssh/keys/vps.pub "${SSH_OPTS[@]}" "$REMOTE"
+
+echo "Creating remote ~/.ssh directory..."
+"${SSHPASS_CMD[@]}" ssh "${SSH_OPTS[@]}" "$REMOTE" \
+  "mkdir -p $REMOTE_SSH_DIR && chmod 700 $REMOTE_SSH_DIR"
+
+echo "Copying SSH files..."
+"${SSHPASS_CMD[@]}" scp "${SSH_OPTS[@]}" ~/.ssh/keys/vps_github "$REMOTE:$REMOTE_SSH_DIR/vps_github"
+"${SSHPASS_CMD[@]}" scp "${SSH_OPTS[@]}" ~/.ssh/keys/vps_github.pub "$REMOTE:$REMOTE_SSH_DIR/vps_github.pub"
+
+echo "Writing SSH config..."
+"${SSHPASS_CMD[@]}" ssh "${SSH_OPTS[@]}" "$REMOTE" "cat > $REMOTE_SSH_DIR/config" <<'EOF'
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/vps_github
+  IdentitiesOnly yes
+EOF
+
+echo "Fixing permissions..."
+"${SSHPASS_CMD[@]}" ssh "${SSH_OPTS[@]}" "$REMOTE" "
+  chmod 600 $REMOTE_SSH_DIR/vps_github &&
+  chmod 644 $REMOTE_SSH_DIR/vps_github.pub &&
+  chmod 600 $REMOTE_SSH_DIR/config
+"
+
+echo "Done. You won't need that password again."
