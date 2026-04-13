@@ -6,7 +6,7 @@ g() {
 #       Status
 # -----------------------
 
-gs() {
+gss() {
   git status -s "$@"
 }
 
@@ -27,14 +27,26 @@ gll() {
 }
 
 glo() {
-  git log --oneline "$@"
+  if [[ -z "$1" ]]; then
+    git log --oneline -n 1
+  elif [[ "$1" =~ ^[0-9]+$ ]]; then
+    git log --oneline -n "$1" "${@:2}"
+  else
+    git log --oneline -n 1 "$@"
+  fi
 }
 
 glon() {
-  git log --oneline --no-decorate "$@"
+  if [[ -z "$1" ]]; then
+    git log --oneline --no-decorate -n 1
+  elif [[ "$1" =~ ^[0-9]+$ ]]; then
+    git log --oneline --no-decorate -n "$1" "${@:2}"
+  else
+    git log --oneline --no-decorate -n 1 "$@"
+  fi
 }
 
-glot() {
+glom() {
   git log --all --author="$(git config user.name)" --since=midnight --oneline
 }
 
@@ -43,11 +55,11 @@ glot() {
 #       Switch
 # -----------------------
 
-gsw() {
-  git swtich "$@"
+gs() {
+  git switch "$@"
 }
 
-gswc() {
+gsc() {
   git switch -c "$@"
 }
 
@@ -88,7 +100,7 @@ ga() {
 }
 
 gaa() {
-  git add * "$@"
+  git add -A "$@"
 }
 
 gar() {
@@ -97,6 +109,10 @@ gar() {
 
 gau() {
   git add -u "$@"
+}
+
+gap() {
+  git add -p "$@"
 }
 
 
@@ -124,10 +140,11 @@ gstp() {
 #       Commit
 # -----------------------
 
-gcm() {
+gc() {
   git commit -m "$@"
 }
 
+# stages all modified ⚠ tracked files 
 gcam() {
   git commit -a -m "$@"
 }
