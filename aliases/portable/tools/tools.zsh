@@ -3,9 +3,9 @@
 # ===============================
 
 # open without changing current dir
-y() {
-  yazi "$@"
-}
+# ya() {
+#   yazi "$@"
+# }
 
 # change the dir to chosen in yazi
 function yy() {
@@ -28,21 +28,4 @@ cul() {
 
 hl() {
   http localhost:3000$1
-}
-
-
-# ===============================
-# processes
-# ===============================
-
-psp() {
-  ps -p $1 -o pid,ppid,user,command
-}
-
-# ===============================
-# ZELLIJ
-# ===============================
-
-ze() {
-  zellij "$@"
 }

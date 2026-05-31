@@ -18,6 +18,10 @@ source $HOME/.config/shell/zshrc.base
 # Dev tools (macOS)
 # ----------------------------------------
 
-export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 2>/dev/null
+. "$HOME/.vite-plus/env"
+
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME/bin:$PATH"
+
+# Pi
+export PATH="/Users/vic/.vite-plus/js_runtime/node/24.16.0/bin:$PATH"

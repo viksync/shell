@@ -36,6 +36,10 @@ glo() {
   fi
 }
 
+gloa() {
+  git log --oneline "$@"
+}
+
 glon() {
   if [[ -z "$1" ]]; then
     git log --oneline --no-decorate -n 1
@@ -121,7 +125,7 @@ gap() {
 # -----------------------
 
 gst() {
-  git stash
+  git stash -u
 }
 
 gstp() {
@@ -132,7 +136,7 @@ gstl() {
   git stash list
 }
 
-gstp() {
+gstm() {
   git stash push -m "$@"
 }
 
@@ -144,16 +148,21 @@ gc() {
   git commit -m "$@"
 }
 
+gca() {
+  git add -A &&
+  git commit -m "$*"
+}
+
 # stages all modified ⚠ tracked files 
 gcam() {
   git commit -a -m "$@"
 }
 
-gca() {
-  git commit --ammend "$@"
+gcame() {
+  git commit --amend "$@"
 }
 
-gcan() {
+gcamen() {
   git commit -a --amend --no-edit "$@"
 }
 
@@ -216,4 +225,25 @@ gwr() {
 
 gwl() {
   git worktree list
+}
+
+
+#------------------------
+#       Cherry
+# -----------------------
+
+gcp() {
+  git cherry-pick "$@"
+}
+
+gcpa() {
+  git cherry-pick --abort
+}
+
+#------------------------
+#       Hacks
+# -----------------------
+
+grdu() {
+  git status --porcelain | awk '/^DU / {print $2}' | xargs git rm
 }
