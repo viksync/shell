@@ -3,14 +3,10 @@ ep() {
   echo $PATH | tr ':' '\n'
 }
 
-w() {
-  which "$@"
-}
+w() { which "$@" }
 
 # Sudo
-_() {
-  sudo "$@"
-}
+_() { sudo "$@" }
 
 # Repeat previous with sudo
 f() { sudo "$(fc -ln -1)"; }
