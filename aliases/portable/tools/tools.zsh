@@ -29,3 +29,16 @@ cul() {
 hl() {
   http localhost:3000$1
 }
+
+ph() {
+  local url
+
+  url=$(pbpaste)
+
+  if [[ -z "$url" ]]; then
+    echo "Clipboard is empty"
+    return 1
+  fi
+
+  s yt-dlp "$url" -P ~/Movies/ph
+}
