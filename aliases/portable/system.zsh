@@ -5,18 +5,6 @@ ep() {
 
 w() { which "$@" }
 
-# Sudo
-_() { sudo "$@" }
-
-# Repeat previous with sudo
-f() { sudo "$(fc -ln -1)"; }
-
-# Repeat previous command
-j() { fc -s }
-
-clr() { clear }
-
-
 # ===============================
 # processes
 # ===============================
